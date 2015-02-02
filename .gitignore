@@ -5,6 +5,7 @@
 *.suo
 *.user
 *.sln.docstates
+*.userprefs
 
 # Build results
 [Dd]ebug/
@@ -69,6 +70,7 @@ ipch/
 *.opensdf
 *.sdf
 *.cachefile
+*.htm
 
 # Visual Studio profiler
 *.psess
