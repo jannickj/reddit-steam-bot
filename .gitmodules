@@ -4,3 +4,6 @@
 [submodule "JSLibrary"]
 	path = JSLibrary
 	url = https://github.com/jannickj/JSLibrary.git
+[submodule "fsharpx"]
+	path = fsharpx
+	url = https://jannickj@github.com/jannickj/fsharpx.git

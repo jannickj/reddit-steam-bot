@@ -40,9 +40,6 @@
     <Reference Include="nunit.framework">
       <HintPath>..\packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
     </Reference>
-    <Reference Include="FSharpx.Core">
-      <HintPath>..\packages\FSharpx.Core.1.8.41\lib\40\FSharpx.Core.dll</HintPath>
-    </Reference>
     <Reference Include="Interop.SHDocVw">
       <HintPath>..\packages\WatiN.2.1.0\lib\net40\Interop.SHDocVw.dll</HintPath>
     </Reference>
@@ -52,18 +49,24 @@
     <Reference Include="WatiN.Core">
       <HintPath>..\packages\WatiN.2.1.0\lib\net40\WatiN.Core.dll</HintPath>
     </Reference>
+    <Reference Include="FSharpx.Core">
+      <HintPath>..\..\fsharpx\bin\v4.0\FSharpx.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="FSharpx.Collections">
+      <HintPath>..\..\fsharpx\bin\v4.0\FSharpx.Collections.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="RedditParserTest.fs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\3.1\Framework\v4.0\Microsoft.FSharp.Targets" />
   <ItemGroup>
-    <ProjectReference Include="..\RedditSteamBotCore\RedditSteamBotCore.fsproj">
-      <Project>{C30D9113-1A6D-4C7B-A1E3-4680C09BE103}</Project>
-      <Name>RedditSteamBotCore</Name>
-    </ProjectReference>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <ProjectReference Include="..\RedditSteamBot\RedditSteamBot.fsproj">
+      <Project>{E43AB1A5-284D-46A1-BDA1-77DCFE074F68}</Project>
+      <Name>RedditSteamBot</Name>
+    </ProjectReference>
   </ItemGroup>
 </Project>

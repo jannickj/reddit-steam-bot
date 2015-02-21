@@ -1,10 +1,12 @@
 ﻿namespace RedditSteamBotCoreTest
 open System
-open RedditSteamBotCore
+open RedditSteamBot
 open NUnit.Framework
-open RedditSteamBotCore.RedditParser
-open WatiNExtend
-open FSharpx.State
+open RedditSteamBot.RedditParser
+open FSharpx.Functional.State
+open FSharpx.Stm.Core
+open WatiN.Core
+open WatiN
 
 [<TestFixture>]
 type RedditParserTest() = 
@@ -20,8 +22,11 @@ type RedditParserTest() =
         Assert.AreEqual (tagline, actual.TagLine.Value);
         Assert.IsTrue (actual.IsRecommended.Value);
         ()
+      
 
+    
     [<Test>]
     member x.test() =
-        let recs = runScript SteamBot.readAllSteamRecommends
+        let script = SteamBot.postCuration "pcmrcccp" "Half-Life: Source" "yo taggy" ""
+        //let vals = runScriptFox script
         ()
