@@ -55,6 +55,12 @@
     <Reference Include="FSharpx.Collections">
       <HintPath>..\..\fsharpx\bin\v4.0\FSharpx.Collections.dll</HintPath>
     </Reference>
+    <Reference Include="JSLibraryFSharp">
+      <HintPath>..\..\JSLibrary\JSLibrary\JSLibraryFSharp\bin\Release\JSLibraryFSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="RedditSharp">
+      <HintPath>..\..\RedditSharp\RedditSharp\bin\Release\RedditSharp.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="RedditParserTest.fs" />

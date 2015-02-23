@@ -5,9 +5,9 @@ module CuratorSelection =
     open JSLibraryFSharp
 
 
-    let inline username (x:^a ) = ( ^a : (member username: string) (x))
-    let inline upvotes (x:^a) = ( ^a : (member upvotes: int) (x))
-    let inline comment (x:^a) = ( ^a : (member comment: string) (x))
+    let inline username (x:^a ) = ( ^a : (member Username: string) (x))
+    let inline upvotes (x:^a) = ( ^a : (member Upvotes: int) (x))
+    let inline comment (x:^a) = ( ^a : (member Comment: string) (x))
 
 
     type CurationWinner<'a> = { TagLine : string; Post: 'a option }

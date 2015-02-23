@@ -1,5 +1,4 @@
 ﻿namespace RedditSteamBot
-open System.Text.RegularExpressions
 open System
 open JSLibraryFSharp
 
@@ -13,7 +12,7 @@ module RedditParser =
         List.tryFind (fun s -> not <| String.IsNullOrWhiteSpace s) split
 
     let  analyzeMatch comment curOut (strMatch,endpos)  =
-        let text = String.toLower <| String.replace strMatch "*" "" 
+        let text = String.toLower <| String.replace "*" "" strMatch
         match text with
         | "not recommended" ->
             { curOut with IsRecommended = Some false }
@@ -25,8 +24,7 @@ module RedditParser =
          
 
     let analyze comment = 
-        Regex.Matches(comment, @"\*\*.*?\*\*") 
-        |> Seq.cast<Match>
-        |> Seq.map (fun (m:Match) -> (m.Value,m.Index+m.Length))
+        Regex.matches @"\*\*.*?\*\*" comment 
+        |> Seq.map (fun (idx,value) -> (value,idx+value.Length))
         |> Seq.fold (analyzeMatch comment) { IsRecommended = None; TagLine = None }
 

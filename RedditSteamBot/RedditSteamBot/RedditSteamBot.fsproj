@@ -38,12 +38,12 @@
     <Compile Include="WatiN.fs" />
     <Compile Include="RedditSharp.fs" />
     <Compile Include="CuratorSelection.fs" />
-    <Compile Include="RedditScanner.fs" />
     <None Include="App.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />
     <Compile Include="SteamBot.fs" />
+    <Compile Include="Bot.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>

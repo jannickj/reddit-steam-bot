@@ -8,14 +8,25 @@ module WatiN =
     open FSharpx.Functional.State
 
 
-    let evalState m s = m s |> fst
-    let execState m s = m s |> snd
 
     let inline dispose (x:^a) = ( ^a : (member Dispose: unit -> unit) (x))
     let inline closeBrowser() = state {
         let! (browser ) = getState
-        return dispose browser 
+        do dispose browser 
         }
+
+    let inline close (x:^a) = ( ^a : (member Close: unit -> unit) (x))
+    let inline closePage() = state {
+        let! (browser ) = getState
+        do close browser 
+        }
+    
+    let inline refresh (x:^a) = ( ^a : (member Refresh: unit -> unit) (x))
+    let inline refreshPage () = state {
+        let! (browser ) = getState
+        do refresh browser 
+        }
+
 
     let inline runScriptAndClose (browser : ^b) (script:State<'a,^b>) = 
         let closeScript = state {
@@ -25,7 +36,7 @@ module WatiN =
           }
         closeScript (browser) |> fst
     
-    let runScriptFox (script:State<'a,FireFox>) =
+    let runScriptFox (script:State<'a,_>) =
         runScriptAndClose (new FireFox()) script
 
     let runScriptIE (script:State<'a,Browser>) =
@@ -37,7 +48,7 @@ module WatiN =
         return goTo browser url 
         }
 
-    let inline textField x finder = ( ^a : (member TextField: 'b -> 'c) (x,finder)) 
+    let inline textField x finder = ( ^a : (member TextField: Constraint -> TextField) (x,finder)) 
     let inline findTextField finder = state {
         let! browser = getState
         return textField browser finder
@@ -48,42 +59,54 @@ module WatiN =
         let! browser = getState
         return div browser finder
         }
+    
+    let inline divs x = ( ^a : (member Divs: DivCollection) (x)) 
+    let inline downloadDivs()  = state {
+        let! browser = getState
+        return List.ofSeq <| divs browser
+        }
+
+    let inline span x finder = ( ^a : (member Span: Constraint -> Span) (x,finder)) 
+    let inline findSpan (finder:Constraint) = state {
+        let! browser = getState
+        return span browser finder
+        }
+
+    let inline clear (x:^a) = ( ^a : (member Clear: unit -> unit) (x)) 
+    let inline clearText textBox = state {
+        do clear textBox
+        }
+    
+    let inline typeText (x:^a) url = ( ^a : (member TypeText: string -> unit) (x,url)) 
+    let inline enterText textBox (text : string) = state {
+        do typeText textBox text 
+        }
+
+    let inline setText textBox (text : string) = state {
+        do! clearText textBox
+        do! enterText textBox text
+        }
+
+    
+    
+
+    let inline hasText (x:^a) text = ( ^a : (member ContainsText: string -> bool) (x,text))
+    let inline containsText (text : string) = state {
+        let! browser = getState
+        return hasText browser text 
+        }
+
+    let inline clickIt (x:^a) = ( ^a : (member Click: unit -> unit) (x))
+    let inline click elem = state {
+        do clickIt elem
+        }
      
-    let findDivs (finder:Constraint) = state {
-        let! (brower : Browser) = getState
-        return List.ofSeq brower.Divs
+    let inline button x finder = ( ^a : (member Button: Constraint -> Button) (x,finder)) 
+    let inline clickButton finder = state {
+        let! browser = getState
+        let but =  button browser finder
+        do! click but
+        return but
         }
 
-    let findSpan (finder:Constraint) = state {
-        let! (brower : Browser) = getState
-        return brower.Span(finder)
-        }
-
-    let clearText (textBox : TextField) = state {
-        return textBox.Clear()
-        }
    
-    let setText (textBox : TextField) (text : string) = state {
-        do textBox.Clear()
-        return textBox.TypeText(text) 
-        }
-
-    let enterText (textBox : TextField) (text : string) = state {
-        let! (browser : Browser) = getState
-        return textBox.TypeText(text) 
-        }
-
-    let containsText (text : string) = state {
-        let! (browser : Browser) = getState
-        return browser.ContainsText(text) 
-        }
-
-    let clickButton (buttonText : string) = state {
-        let! (browser : Browser) = getState
-        return browser.Button(Find.ByName(buttonText)).Click() 
-        }
-
-    let click (elem:Element) = state {
-        let! (browser : Browser) = getState
-        do elem.Click()
-        }

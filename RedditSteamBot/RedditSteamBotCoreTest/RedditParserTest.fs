@@ -7,6 +7,8 @@ open FSharpx.Functional.State
 open FSharpx.Stm.Core
 open WatiN.Core
 open WatiN
+open RedditSharp
+open JSLibraryFSharp.Monad
 
 [<TestFixture>]
 type RedditParserTest() = 
@@ -27,6 +29,12 @@ type RedditParserTest() =
     
     [<Test>]
     member x.test() =
-        let script = SteamBot.postCuration "pcmrcccp" "Half-Life: Source" "yo taggy" ""
+        //let script = SteamBot.editCuration "pcmrcccp" 257350 "yoyo" "linky.sweet"  // "Half-Life: Source" "yo taggy" ""
+        //let posts = State.eval (new Reddit(), ()) script
+        //let ap = List.toArray posts
         //let vals = runScriptFox script
+        //let reddit = new Reddit();
+        //let post = reddit.GetPost(new Uri("http://www.reddit.com/r/pcmasterrace/comments/2ws5h0/i_saw_the_post_on_biased_benchmarks_and_raise_you/cotm90f"))
+        Bot.runConstFirefox "pcmastercurator" "pcmrcccp"
+
         ()
