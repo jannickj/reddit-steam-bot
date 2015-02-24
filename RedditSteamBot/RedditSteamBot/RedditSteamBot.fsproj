@@ -17,7 +17,8 @@
     <OutputPath>bin\Debug</OutputPath>
     <DefineConstants>DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
-    <PlatformTarget></PlatformTarget>
+    <PlatformTarget>
+    </PlatformTarget>
     <Tailcalls>false</Tailcalls>
     <ConsolePause>false</ConsolePause>
   </PropertyGroup>
@@ -28,7 +29,8 @@
     <OutputPath>bin\Release</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <Externalconsole>true</Externalconsole>
-    <PlatformTarget></PlatformTarget>
+    <PlatformTarget>
+    </PlatformTarget>
     <Tailcalls>true</Tailcalls>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\3.1\Framework\v4.0\Microsoft.FSharp.Targets" />
@@ -72,12 +74,12 @@
     <Reference Include="HtmlAgilityPack">
       <HintPath>..\..\RedditSharp\RedditSharp\bin\Release\HtmlAgilityPack.dll</HintPath>
     </Reference>
-    <Reference Include="FSharpx.Core">
-      <HintPath>..\..\fsharpx\bin\v4.0\FSharpx.Core.dll</HintPath>
-    </Reference>
     <Reference Include="FSharpx.Collections">
       <HintPath>..\..\fsharpx\bin\v4.0\FSharpx.Collections.dll</HintPath>
     </Reference>
     <Reference Include="FSharp.Core, Version=4.3.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+    <Reference Include="FSharpx.Core">
+      <HintPath>..\..\fsharpx\bin\FSharpx.Core.dll</HintPath>
+    </Reference>
   </ItemGroup>
 </Project>

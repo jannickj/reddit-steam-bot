@@ -49,9 +49,6 @@
     <Reference Include="WatiN.Core">
       <HintPath>..\packages\WatiN.2.1.0\lib\net40\WatiN.Core.dll</HintPath>
     </Reference>
-    <Reference Include="FSharpx.Core">
-      <HintPath>..\..\fsharpx\bin\v4.0\FSharpx.Core.dll</HintPath>
-    </Reference>
     <Reference Include="FSharpx.Collections">
       <HintPath>..\..\fsharpx\bin\v4.0\FSharpx.Collections.dll</HintPath>
     </Reference>
@@ -60,6 +57,9 @@
     </Reference>
     <Reference Include="RedditSharp">
       <HintPath>..\..\RedditSharp\RedditSharp\bin\Release\RedditSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="FSharpx.Core">
+      <HintPath>..\..\fsharpx\bin\FSharpx.Core.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

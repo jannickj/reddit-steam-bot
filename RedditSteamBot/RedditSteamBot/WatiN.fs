@@ -5,108 +5,65 @@ module WatiN =
     open WatiN.Core
     open WatiN.Core.Constraints
     open FSharpx.Stm.Core
-    open FSharpx.Functional.State
+    open FSharpx.Functional.IO
 
+    type IOWatinBrowser = { bs : Browser } with
+        member x.Dispose()                              = io { do x.bs.Dispose() }
+        member x.ClosePage()                            = io { do x.bs.Close() }
+        member x.RefreshPage()                          = io { do x.bs.Refresh() }
+        member x.OpenPage (url:string)                  = io { do x.bs.GoTo(url) }
+        member x.FindTextField (finder:Constraint)      = io { return x.bs.TextField( finder )}
+        member x.FindDiv  (finder:Constraint)           = io { return x.bs.Div (finder)}
+        member x.Divs                                   = io { return x.bs.Divs }
+        member x.FindSpan (finder:Constraint)           = io { return x.bs.Span finder }
+        member x.Click (elem : Element)                 = io { do elem.Click() }
+        member x.ClickButton (finder:Constraint)        = io { do x.bs.Button(finder).Click() }
+        member x.ClearText (textField : TextField)      = io { do textField.Clear() }
+        member x.EnterText (textField : TextField,text) = io { do textField.TypeText text }
+        member x.ContainsText (text :string)            = io { return x.bs.ContainsText text }
 
+    let toIOBrowser browser = { bs = browser }
 
-    let inline dispose (x:^a) = ( ^a : (member Dispose: unit -> unit) (x))
-    let inline closeBrowser() = state {
-        let! (browser ) = getState
-        do dispose browser 
+    //Browser type class
+    let inline dispose browser  = ( ^browser : (member  Dispose: unit -> IO<unit>) (browser))
+
+    let inline closePage browser = ( ^browser : (member ClosePage: unit -> IO<unit>) (browser))
+
+    let inline refreshPage browser = ( ^browser : (member RefreshPage: unit -> IO<unit>) (browser))
+
+    let inline openPage browser url = ( ^browser : (member OpenPage: string -> IO<unit>) (browser,url))
+
+    let inline findTextField browser finder = ( ^browser : (member FindTextField: Constraint -> IO<TextField>) (browser,finder)) 
+
+    let inline findDiv browser finder = ( ^browser : (member FindDiv: Constraint -> IO<Div>) (browser,finder)) 
+
+    let inline divs browser = ( ^browser : (member Divs: IO<DivCollection>) (browser)) 
+
+    let inline findSpan browser finder = ( ^browser : (member FindSpan: Constraint -> IO<Span>) (browser,finder)) 
+
+    let inline click browser elem = ( ^browser : (member Click: Element -> IO<unit>) (browser,elem))
+
+    let inline clickButton browser finder = ( ^browser : (member ClickButton: Constraint -> IO<Button>) (browser,finder)) 
+
+    let inline clearText browser textField = ( ^browser : (member ClearText: TextField -> IO<unit>) (browser,textField)) 
+
+    let inline enterText browser textField text = ( ^browser : (member EnterText: TextField -> string -> IO<unit>) browser,textField,text) 
+
+    let inline containsText browser text = ( ^browser : (member ContainsText: string -> IO<bool>) (browser,text))
+
+    let inline setText browser textBox (text : string) = io {
+        do! clearText browser textBox
+        do! enterText browser textBox text
         }
 
-    let inline close (x:^a) = ( ^a : (member Close: unit -> unit) (x))
-    let inline closePage() = state {
-        let! (browser ) = getState
-        do close browser 
-        }
+
+    let createFireFox  =
+       io { return { bs = new FireFox()} }
     
-    let inline refresh (x:^a) = ( ^a : (member Refresh: unit -> unit) (x))
-    let inline refreshPage () = state {
-        let! (browser ) = getState
-        do refresh browser 
-        }
-
-
-    let inline runScriptAndClose (browser : ^b) (script:State<'a,^b>) = 
-        let closeScript = state {
-          let! outp = script
-          do! closeBrowser()
-          return outp
-          }
-        closeScript (browser) |> fst
-    
-    let runScriptFox (script:State<'a,_>) =
-        runScriptAndClose (new FireFox()) script
-
-    let runScriptIE (script:State<'a,Browser>) =
-        runScriptAndClose (new IE() :> Browser) script
-
-    let inline goTo (x:^a) url = ( ^a : (member GoTo: string -> unit) (x,url)) 
-    let inline openPage (url:string) = state {
-        let! browser = getState
-        return goTo browser url 
-        }
-
-    let inline textField x finder = ( ^a : (member TextField: Constraint -> TextField) (x,finder)) 
-    let inline findTextField finder = state {
-        let! browser = getState
-        return textField browser finder
-        }
-
-    let inline div x finder = ( ^a : (member Div: Constraint -> Div) (x,finder)) 
-    let inline findDiv finder = state {
-        let! browser = getState
-        return div browser finder
-        }
-    
-    let inline divs x = ( ^a : (member Divs: DivCollection) (x)) 
-    let inline downloadDivs()  = state {
-        let! browser = getState
-        return List.ofSeq <| divs browser
-        }
-
-    let inline span x finder = ( ^a : (member Span: Constraint -> Span) (x,finder)) 
-    let inline findSpan (finder:Constraint) = state {
-        let! browser = getState
-        return span browser finder
-        }
-
-    let inline clear (x:^a) = ( ^a : (member Clear: unit -> unit) (x)) 
-    let inline clearText textBox = state {
-        do clear textBox
-        }
-    
-    let inline typeText (x:^a) url = ( ^a : (member TypeText: string -> unit) (x,url)) 
-    let inline enterText textBox (text : string) = state {
-        do typeText textBox text 
-        }
-
-    let inline setText textBox (text : string) = state {
-        do! clearText textBox
-        do! enterText textBox text
-        }
+    let createIE  =
+       io { return { bs = new IE()} }
 
     
     
-
-    let inline hasText (x:^a) text = ( ^a : (member ContainsText: string -> bool) (x,text))
-    let inline containsText (text : string) = state {
-        let! browser = getState
-        return hasText browser text 
-        }
-
-    let inline clickIt (x:^a) = ( ^a : (member Click: unit -> unit) (x))
-    let inline click elem = state {
-        do clickIt elem
-        }
-     
-    let inline button x finder = ( ^a : (member Button: Constraint -> Button) (x,finder)) 
-    let inline clickButton finder = state {
-        let! browser = getState
-        let but =  button browser finder
-        do! click but
-        return but
-        }
 
    

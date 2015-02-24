@@ -3,12 +3,13 @@ open System
 open RedditSteamBot
 open NUnit.Framework
 open RedditSteamBot.RedditParser
-open FSharpx.Functional.State
+open FSharpx.Functional
 open FSharpx.Stm.Core
 open WatiN.Core
 open WatiN
 open RedditSharp
 open JSLibraryFSharp.Monad
+open JSLibraryFSharp.IO.Logger
 
 [<TestFixture>]
 type RedditParserTest() = 
@@ -35,6 +36,6 @@ type RedditParserTest() =
         //let vals = runScriptFox script
         //let reddit = new Reddit();
         //let post = reddit.GetPost(new Uri("http://www.reddit.com/r/pcmasterrace/comments/2ws5h0/i_saw_the_post_on_biased_benchmarks_and_raise_you/cotm90f"))
-        Bot.runConstFirefox "pcmastercurator" "pcmrcccp"
-
+        IO.run <| Bot.runConstFirefox Level.All "pcmastercurator" "pcmrcccp"
+        //let a = WatiN.runScriptFox <| WatiN.o
         ()

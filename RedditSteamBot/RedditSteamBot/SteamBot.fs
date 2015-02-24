@@ -2,7 +2,7 @@
 module SteamBot = 
     open System
     open WatiN.Core
-    open FSharpx.Functional.State
+    open FSharpx.Functional.IO
     open WatiN
     open JSLibraryFSharp
     open FSharpx.Functional.Option
@@ -33,12 +33,12 @@ module SteamBot =
     let escapeChars = 
         String.replace ":" "\\:"
 
-    let inline postCuration group gameTitle tagline link = state {
-        do! openPage <| newCurationLink group
+    let inline postCuration brow group gameTitle tagline link = io {
+        do! openPage brow <| newCurationLink group
 
-        let! appField = findTextField <| Find.ById appFieldId
-        do! setText appField (escapeChars gameTitle) 
-        let! suggestDiv = findDiv <| Find.ById "game_select_suggestions"
+        let! appField = findTextField brow <| Find.ById appFieldId
+        do! setText brow appField (escapeChars gameTitle) 
+        let! suggestDiv = findDiv brow <| Find.ById "game_select_suggestions"
         do appField.Click()
         do  suggestDiv.WaitUntil(fun (d:Div) -> d.Divs.Count > 0)
         let suggestions : Div seq = seq suggestDiv.Divs
@@ -47,38 +47,38 @@ module SteamBot =
         let bestTitle = bestSuggest.Text
         do bestSuggest.Click()
 
-        let! linkField = findTextField <| Find.ById linkFieldId
-        do! setText linkField link
+        let! linkField = findTextField brow <| Find.ById linkFieldId
+        do! setText brow linkField link
 
 
-        let! recommendField = findTextField <| Find.ById recommendFieldId
-        do! setText recommendField tagline
+        let! recommendField = findTextField brow <| Find.ById recommendFieldId
+        do! setText brow recommendField tagline
 
-        let! div = findDiv <| Find.ByClass acceptPostButtonClass
-        do!  click div
+        let! div = findDiv brow <| Find.ByClass acceptPostButtonClass
+        do!  click brow div
         }
 
-    let inline deleteCuration group gameId = state {
-        do! openPage <| appCurationLink group gameId
+    let inline deleteCuration brow group gameId = io {
+        do! openPage brow <| appCurationLink group gameId
 
-        let! controls = findDiv <| Find.ByClass "panel owner"
+        let! controls = findDiv brow <| Find.ByClass "panel owner"
         let delLink = controls.Link(Find.ByText "Delete this recommendation")
-        let! delSpan = findSpan <| Find.ByText "Delete recommendation"
-        do! click delLink
-        do! click delSpan
+        let! delSpan = findSpan brow <| Find.ByText "Delete recommendation"
+        do! click brow delLink
+        do! click brow delSpan
         }
 
-    let inline editCuration group gameId tagline link = state {
-        do! openPage <| editCurationLink group gameId
+    let inline editCuration brow group gameId tagline link = io {
+        do! openPage brow <| editCurationLink group gameId
 
-        let! tagLineField = findTextField <| Find.ById recommendFieldId
-        do! setText tagLineField tagline
+        let! tagLineField = findTextField brow <| Find.ById recommendFieldId
+        do! setText brow tagLineField tagline
 
-        let! linkField = findTextField <| Find.ById linkFieldId
-        do! setText linkField link
+        let! linkField = findTextField brow <| Find.ById linkFieldId
+        do! setText brow linkField link
 
-        let! div = findDiv <| Find.ByClass acceptEditButtonClass
-        do! click div
+        let! div = findDiv brow <| Find.ByClass acceptEditButtonClass
+        do! click brow div
 
         }
 
@@ -114,50 +114,48 @@ module SteamBot =
         return { Title = gameTitle; GameId = id; Link = reviewLinkUrl; PostId = postId; TagLine = tagline' }
         }
 
-    let inline readPage group = state {
-        let! div = findDiv <| Find.ById "RecommendedAppsRows"
+    let inline readPage brow group = io {
+        let! div = findDiv brow <| Find.ById "RecommendedAppsRows"
         let divL = List.ofSeq <| div.ChildrenOfType<Div>()
         let cDiv (d:Div) = d.Div(Find.ByClass("curation_app_block_body"))
         let divBodyL = List.map cDiv divL
         return List.choose (readBlock group) divBodyL
         }
 
-    let inline isLast () = state {
-        let! browser = getState
-        let! span = findSpan <| Find.ById "RecommendedApps_btn_next"
-        let! activePage = findSpan <| Find.ByClass("RecommendedApps_paging_pagelink active")
+    let inline isLast brow = io {
+        let! span = findSpan brow <| Find.ById "RecommendedApps_btn_next"
+        let! activePage = findSpan brow <| Find.ByClass("RecommendedApps_paging_pagelink active")
 
         return not activePage.Exists || not span.Exists || span.ClassName = "pagebtn disabled"
         }
    
-    let inline nextPage () = state {
-        let! browser = getState
-        let! span = findSpan <| Find.ById "RecommendedApps_btn_next"
-        let! activePage = findSpan <| Find.ByClass("RecommendedApps_paging_pagelink active")
+    let inline nextPage brow = io {
+        let! span = findSpan brow <| Find.ById "RecommendedApps_btn_next"
+        let! activePage = findSpan brow <| Find.ByClass("RecommendedApps_paging_pagelink active")
         let oldText = activePage.Text
-        do! click span
+        do! click brow span
         do activePage.WaitUntil(fun (s:Span) -> s.Text <> oldText)
         }
 
 
-    let inline readAllPages group  = 
-        let rec read group = state {
-            let! browser = getState
-            let! isLast = isLast () 
-            let! page = readPage group
+    let inline readAllPages brow group  = 
+        let rec read group = io {
+            let! isLast = isLast brow 
+            let! page = readPage brow group
             if isLast then
                 return page
             else
-                do! nextPage()
+                do! nextPage brow
                 let! rest = read group
                 return page @ rest
         }
         read group
 
-    let inline readAllSteamRecommends group = state {
-        do! openPage <| curationLink group
-        do! refreshPage ()
-        let! recommends = readAllPages group
+     
+    let inline readAllSteamRecommends brow group = io {
+        do! openPage brow <| curationLink group
+        do! refreshPage brow
+        let! recommends = readAllPages brow group
         return recommends
         }
        
