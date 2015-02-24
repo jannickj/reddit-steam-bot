@@ -19,7 +19,7 @@ module Program =
         //let reddit = new Reddit()
         //let posts = State.eval (reddit,()) <| downloadPosts subreddit
         //let a = WatiN.runScriptIE <| WatiN.closeBrowser()
-        IO.run <| Bot.runConstFirefox Level.All "pcmastercurator" "pcmrcccp"
+        Async.StartImmediate <| Bot.runConstFirefox Level.All "pcmastercurator" "pcmrcccp"
         //ignore <| printfn "%A" a
         0 // return an integer exit code
 

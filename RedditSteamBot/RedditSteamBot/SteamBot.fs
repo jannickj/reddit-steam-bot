@@ -2,7 +2,6 @@
 module SteamBot = 
     open System
     open WatiN.Core
-    open FSharpx.Functional.IO
     open WatiN
     open JSLibraryFSharp
     open FSharpx.Functional.Option
@@ -33,7 +32,7 @@ module SteamBot =
     let escapeChars = 
         String.replace ":" "\\:"
 
-    let inline postCuration brow group gameTitle tagline link = io {
+    let inline postCuration brow group gameTitle tagline link = async {
         do! openPage brow <| newCurationLink group
 
         let! appField = findTextField brow <| Find.ById appFieldId
@@ -58,7 +57,7 @@ module SteamBot =
         do!  click brow div
         }
 
-    let inline deleteCuration brow group gameId = io {
+    let inline deleteCuration brow group gameId = async {
         do! openPage brow <| appCurationLink group gameId
 
         let! controls = findDiv brow <| Find.ByClass "panel owner"
@@ -68,7 +67,7 @@ module SteamBot =
         do! click brow delSpan
         }
 
-    let inline editCuration brow group gameId tagline link = io {
+    let inline editCuration brow group gameId tagline link = async {
         do! openPage brow <| editCurationLink group gameId
 
         let! tagLineField = findTextField brow <| Find.ById recommendFieldId
@@ -114,7 +113,7 @@ module SteamBot =
         return { Title = gameTitle; GameId = id; Link = reviewLinkUrl; PostId = postId; TagLine = tagline' }
         }
 
-    let inline readPage brow group = io {
+    let inline readPage brow group = async {
         let! div = findDiv brow <| Find.ById "RecommendedAppsRows"
         let divL = List.ofSeq <| div.ChildrenOfType<Div>()
         let cDiv (d:Div) = d.Div(Find.ByClass("curation_app_block_body"))
@@ -122,14 +121,14 @@ module SteamBot =
         return List.choose (readBlock group) divBodyL
         }
 
-    let inline isLast brow = io {
+    let inline isLast brow = async {
         let! span = findSpan brow <| Find.ById "RecommendedApps_btn_next"
         let! activePage = findSpan brow <| Find.ByClass("RecommendedApps_paging_pagelink active")
 
         return not activePage.Exists || not span.Exists || span.ClassName = "pagebtn disabled"
         }
    
-    let inline nextPage brow = io {
+    let inline nextPage brow = async {
         let! span = findSpan brow <| Find.ById "RecommendedApps_btn_next"
         let! activePage = findSpan brow <| Find.ByClass("RecommendedApps_paging_pagelink active")
         let oldText = activePage.Text
@@ -139,7 +138,7 @@ module SteamBot =
 
 
     let inline readAllPages brow group  = 
-        let rec read group = io {
+        let rec read group = async {
             let! isLast = isLast brow 
             let! page = readPage brow group
             if isLast then
@@ -152,7 +151,7 @@ module SteamBot =
         read group
 
      
-    let inline readAllSteamRecommends brow group = io {
+    let inline readAllSteamRecommends brow group = async {
         do! openPage brow <| curationLink group
         do! refreshPage brow
         let! recommends = readAllPages brow group

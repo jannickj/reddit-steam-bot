@@ -1,7 +1,6 @@
 ﻿namespace RedditSteamBot
 module Bot =
     open System
-    open FSharpx.Functional.IO
     open FSharpx.Functional
     open FSharpx.Stm.Core
     open RedditSharp
@@ -14,8 +13,9 @@ module Bot =
     open WatiN.Core            
     open WatiN
     open JSLibraryFSharp.IO.Logger
+    open FSharpx.Functional.Async
 
-    let inline downloadPosts reddit subredditName = io {
+    let inline downloadPosts reddit subredditName = async {
         let! hotPost = getHotPosts reddit subredditName
         return List.ofSeq <| hotPost
         }
@@ -31,7 +31,7 @@ module Bot =
                }
     
 
-    let inline setup bot = io {
+    let inline setup bot = async {
         let! curRecommends = SteamBot.readAllSteamRecommends bot.Browser bot.Curator
         let idRecommends = List.map (fun s -> (s.PostId,s)) curRecommends
         return { bot with IdRcmd = Map.ofList idRecommends }
@@ -53,7 +53,7 @@ module Bot =
             }
 
 
-    let inline updateRecommend bot (sr:SteamRecommend) = io {
+    let inline updateRecommend bot (sr:SteamRecommend) = async {
         let! post = getPost bot.Reddit sr.Link
         let comments : _ = List.ofArray post.Comments
         let all = allAPost post comments 
@@ -71,7 +71,7 @@ module Bot =
         | Some _ -> return Some sr
         }
 
-    let inline updateRecommendSequential (bot:BotKnowledge) (id,sr) = io { 
+    let inline updateRecommendSequential (bot:BotKnowledge) (id,sr) = async { 
         let! maybeSr = attempt <| updateRecommend bot sr
         match maybeSr with
         | Choice1Of2 (Some sr') -> return {bot with IdRcmd = Map.add id sr' bot.IdRcmd }
@@ -81,7 +81,7 @@ module Bot =
            do! logError bot.LogLevel <| sprintf "Exception: %s" exn.Message
            return bot 
          }
-    let inline updatePostSequential (bot:BotKnowledge) () (post:Post) = io {   
+    let inline updatePostSequential (bot:BotKnowledge) () (post:Post) = async {   
         let winner = findPostWinner bot.MaxTaglineLength post
 
         match winner with
@@ -97,25 +97,25 @@ module Bot =
         | _ -> return ()
         }
 
-    let inline runOnce bot = io {
+    let inline runOnce bot = async {
         do! logInfo bot.LogLevel <| "Checking steam for all curations"
         let! bot = setup bot
 
         do! logInfo bot.LogLevel <| "Updating curations based on changes made to reddit posts"
-        let! bot' = IO.foldM (updateRecommendSequential) bot (Map.toList bot.IdRcmd)
+        let! bot' = Async.foldM (updateRecommendSequential) bot (Map.toList bot.IdRcmd)
 
         do! logInfo bot.LogLevel <| "Downloading all posts from reddit which are hot"
         let! attemptPosts = attempt <| downloadPosts bot.Reddit bot.Subreddit
         match attemptPosts with
         | Choice1Of2 posts ->
             let newPosts = List.filter (fun (p:Post) -> not <| Map.containsKey p.Id bot.IdRcmd) posts
-            do! IO.foldM (updatePostSequential bot) () newPosts
+            do! Async.foldM (updatePostSequential bot) () newPosts
         | Choice2Of2 exn ->
             do! logCritical bot.LogLevel <| "Failed to download posts from reddit"
             do! logCritical bot.LogLevel <| sprintf "Exception: %s" exn.Message
         }
 
-    let runConstFirefox loglevel subreddit curator = io {
+    let runConstFirefox loglevel subreddit curator = async {
         let fox = toIOBrowser <| new IE()
         let reddit = toIOReddit <| new Reddit()
         let bot = { Browser = fox

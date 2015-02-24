@@ -4,18 +4,17 @@ open System
 module RedditSharp = 
     open RedditSharp.Things
     open RedditSharp
-    open FSharpx.Functional.IO
 
     type IOReddit = { red : Reddit } with
-        member x.getHotPosts name = io { let sub = x.red.GetSubreddit name
+        member x.getHotPosts name = async { let sub = x.red.GetSubreddit name
                                          return seq sub.Hot }
-        member x.GetPost uri = io { return x.red.GetPost(new Uri(uri))}
+        member x.GetPost uri = async { return x.red.GetPost(new Uri(uri))}
 
     let toIOReddit reddit = { red = reddit }
     
     //let inline getSubreddit (x:^a) subreddit = ( ^a : (member GetSubreddit: string -> IO<Subreddit>) (x,subreddit)) 
-    let inline getPost (x:^a) uri = ( ^a : (member GetPost: string -> IO<Post>) (x,uri))
-    let inline getHotPosts (x:^a) subreddit = ( ^a : (member getHotPosts: string -> IO<Post seq>) (x,subreddit))
+    let inline getPost (x:^a) uri = ( ^a : (member GetPost: string -> Async<Post>) (x,uri))
+    let inline getHotPosts (x:^a) subreddit = ( ^a : (member getHotPosts: string -> Async<Post seq>) (x,subreddit))
 
     type Apost = {data : obj; post: Post} with
         member x.Comment = 

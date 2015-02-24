@@ -36,6 +36,6 @@ type RedditParserTest() =
         //let vals = runScriptFox script
         //let reddit = new Reddit();
         //let post = reddit.GetPost(new Uri("http://www.reddit.com/r/pcmasterrace/comments/2ws5h0/i_saw_the_post_on_biased_benchmarks_and_raise_you/cotm90f"))
-        IO.run <| Bot.runConstFirefox Level.All "pcmastercurator" "pcmrcccp"
+        Async.RunSynchronously <| Bot.runConstFirefox Level.All "pcmastercurator" "pcmrcccp"
         //let a = WatiN.runScriptFox <| WatiN.o
         ()
